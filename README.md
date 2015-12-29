@@ -109,7 +109,7 @@ Make sure to target **API 19: Android 4.4 (KitKat)**. While we'll talk about fea
  
 You'll want to start with an **Empty Activity**. Then modify the code (e.g., the `TextView` instead of `activity_main`) so that instead of "Hello World!", the screen shows a warm, personal message for your instructor and TA. Something polite; let's get started on the right foot. You're welcome to make any other changes you wish, but you only need to worry about changing the message.
 
-You should also add a **custom icon** for your application. I've provided an okay `hello_icon.png` inside the `img/` folder of the code repo. You should copy this into the `src/main/res/drawable` folder of Android project. You should then modify the `manifest.xml` file so that the `android:icon` attribute of the `<application>` tag points at `drawable/hello_icon`. For better results, copy each of the resolution-specific images into their appropriate folders; Android will then pick the appropriate resolution based on the device!
+You should also add a **custom icon** for your application. I've provided an okay `hello_icon.png` inside the `img/` folder of the code repo that you can use, or you can design your own. You can specify the icon easily in Android Studio by selecting the `app` folder in the project browser, and then selecting `File > New > Image Asset` and specifying a new **Launcher Icon**. You can instead specify it manually by coping the image into the `src/main/res/drawable` folder of Android project, and modifying the `manifest.xml` file so that the `android:icon` attribute of the `<application>` tag points at `drawable/hello_icon`. For better results, copy each of the resolution-specific images into their appropriate folders; Android will then pick the appropriate resolution based on the device!
 
 #### Run in Emulator
 You should test your application inside an **emulated android device**, to make sure that is set up. 
@@ -118,7 +118,11 @@ You will need to create a new _Virtual Device_ if you haven't before. Open up th
 
 You can then run your application in the emulator by clicking on the green "Run" button at the top of Android Studio.
 
-Once you have the app working in the emulator, take a **Screenshot** of it running. Save this image in the `screenshots/` folder provided.
+Once you have the app working in the emulator, take a **Screenshot** of it running. You can do this easily by hitting the camera icon in the _Android Monitor_ pane of Android Studio (where you see the logs).
+
+![screen capture icon](./img/screenshot_icon.png)
+
+Save this image in the `screenshots/` folder provided.
 
 #### Run on a Device
 You should also test to make sure that you can test your app on an actual device. This will make your life **_MUCH_** more pleasant. See [this link](http://developer.android.com/tools/device.html) for instructions. If you don't have access to a device, check with us about other options.
@@ -127,7 +131,7 @@ You'll need to make sure that your device has developer options enabled (you nee
 
 You should then be able to deploy to the device by using the green "Run" button in Android Studio.
 
-Once you've deployed to a device, take a picture or screenshot of it running (you can usually do a screen capture by holding Power + Vol Down). Put this file inside the `screenshots/` folder as well.
+Once you've deployed to a device, take a picture or screenshot of it running. Put this file inside the `screenshots/` folder as well.
 
 #### Running via Gradle
 You'll also want to double-check that you can build and install your app via Gradle; this is how we'll test and run your apps, so it's a good idea to make sure it works!
