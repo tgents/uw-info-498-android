@@ -105,7 +105,9 @@ Create a new Android Project in Android Studio (or using the command-line tools 
 * Your company name should look like `uwnetid.uw.edu` (using your uwnetid), so that the package name ends up being `edu.uw.uwnetid.hello`.
 * Make sure to save the project inside your `warmup` code repo!
 
-Make sure to target **API 19: Android 4.4 (KitKat)**. While we'll talk about features of Lollipop and Marshmallow, we're going to target a slightly older release to make sure we run on more devices (and to give us at least a taste of supporting older hardware). _If your Android device is older than this, please target that instead and let us know so we can adjust our lower bound!_
+Make sure to target **API 15: Android 4.0.3 (Ice Cream Sandwich)** as your _minimum_ SDK. You'll use this to make sure you can support older devices. 
+
+However, we'll be **targeting** (read: testing on) API 21: Android 5.0 Lollipop. This value can be changed in the `build.gradle` file in the `app` folder (at the Module level)--simply change **`targetSdkVersion`** to **21**. _If you are testing on a physical Android device that is older than this, target the API of your device and let us know!_
  
 You'll want to start with an **Empty Activity**. Then modify the code (e.g., the `TextView` instead of `activity_main`) so that instead of "Hello World!", the screen shows a warm, personal message for your instructor and TA. Something polite; let's get started on the right foot. You're welcome to make any other changes you wish, but you only need to worry about changing the message.
 
