@@ -28,7 +28,7 @@ As with all assignments, you should start by **forking** and **cloning** this re
 
 You will need to create a new project through Android Studio. Make sure to name your project **sunspotter**, so that the package is `edu.uw.uwnetid.sunspotter`. _You will need to save the project inside your cloned repo!_
 
-Once again, target API 19 (4.4 KitKat) as your minimum SDK. You should start with a single empty Activity; you will need to build the layout from scratch.
+Once again, target API 15 (4.0.3 Ice Cream Sandwich) as your minimum SDK. You should start with a single empty Activity; you will need to build the layout from scratch. Once you've created the app, go into the `build.gradle` file (Module level) and set the target SDK to be **21**.
 
 ### Layout and Appearance
 Your SunSpotter app should run in a single Activity (screen), following the rough mock-up below:

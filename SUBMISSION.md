@@ -6,7 +6,7 @@ The below questions should be answered regarding your submission!
 > Answer goes here!
 
 
-##### What model device did you test your application on? #####
+##### What model device did you test your application on? What SDK did you target? #####
 > Answer goes here!
 
 
