@@ -22,7 +22,7 @@ Once you have git installed, you'll need to `fork` this repository to your own a
 ![clone url](./img/clone.png)
 
 You can clone with the command
-    
+
     $ git clone paste-your-url-here
 
 Which will create a new `warmup/` folder which you can `cd` into.
@@ -67,6 +67,12 @@ to build the provided code _and_ run the provided tests. Note that the provided 
 
 If you _really_ need a GUI, you can get one with `gradle --gui`.
 
+Finally, if you add a `main` method to `Person`, you can run it using
+
+    $ gradle run
+
+Note that if you want to use a different main class, you'll need to update the `mainClassName` field in the `build.gradle` file.
+
 
 ## 3. Java Debugging
 Now that you're all set up, the bulk of this assignment involves taking the provided Java code and making it work---that is, making it so that all the unit tests pass. Clearly you should do this by modifying the source code (in the `java/src/main` folder); you should **not** change the existing tests in `java/src/test`, though you will be required to add a few new tests as well.
@@ -105,16 +111,16 @@ Create a new Android Project in Android Studio (or using the command-line tools 
 * Your company name should look like `uwnetid.uw.edu` (using your uwnetid), so that the package name ends up being `edu.uw.uwnetid.hello`.
 * Make sure to save the project inside your `warmup` code repo!
 
-Make sure to target **API 15: Android 4.0.3 (Ice Cream Sandwich)** as your _minimum_ SDK. You'll use this to make sure you can support older devices. 
+Make sure to target **API 15: Android 4.0.3 (Ice Cream Sandwich)** as your _minimum_ SDK. You'll use this to make sure you can support older devices.
 
 However, we'll be **targeting** (read: testing on) API 21: Android 5.0 Lollipop. This value can be changed in the `build.gradle` file in the `app` folder (at the Module level)--simply change **`targetSdkVersion`** to **21**. _If you are testing on a physical Android device that is older than this, target the API of your device and let us know!_
- 
+
 You'll want to start with an **Empty Activity**. Then modify the code (e.g., the `TextView` instead of `activity_main`) so that instead of "Hello World!", the screen shows a warm, personal message for your instructor and TA. Something polite; let's get started on the right foot. You're welcome to make any other changes you wish, but you only need to worry about changing the message.
 
 You should also add a **custom icon** for your application. I've provided an okay `hello_icon.png` inside the `img/` folder of the code repo that you can use, or you can design your own. You can specify the icon easily in Android Studio by selecting the `app` folder in the project browser, and then selecting `File > New > Image Asset` and specifying a new **Launcher Icon**. You can instead specify it manually by coping the image into the `src/main/res/drawable` folder of Android project, and modifying the `manifest.xml` file so that the `android:icon` attribute of the `<application>` tag points at `drawable/hello_icon`. For better results, copy each of the resolution-specific images into their appropriate folders; Android will then pick the appropriate resolution based on the device!
 
 #### Run in Emulator
-You should test your application inside an **emulated android device**, to make sure that is set up. 
+You should test your application inside an **emulated android device**, to make sure that is set up.
 
 You will need to create a new _Virtual Device_ if you haven't before. Open up the **AVD Manager** (`Tools > Android > AVD Manager` in Android Studio, or `android avd` from the command line). Then create a new virtual device to use. We'll be testing against a virtual **Nexus 5**, so I recommend you use that as well.
 

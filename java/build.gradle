@@ -1,4 +1,8 @@
 apply plugin: 'java'
+apply plugin: 'application'
+
+//specify main class
+mainClassName = "edu.info498d.warmup.Person"
 
 repositories {
     mavenCentral()
