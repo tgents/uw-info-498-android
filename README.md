@@ -93,7 +93,7 @@ In order to get the code to work, you will need to do the following (in no parti
 
 * Implement an `SalaryComparator` class (which implements the [Comparator](https://docs.oracle.com/javase/8/docs/api/java/util/Comparator.html) interface) that compares two `Person` objects and arranges them by salary (i.e., salary 10,000 comes before salary 100,000). This Comparator **MUST BE** a [nested class](https://docs.oracle.com/javase/tutorial/java/javaOO/nested.html) inside of the `Person` class; `Person` fields must remain private.
 
-* Create a class (`static`) method `Person.createFamily()` that returns an `ArrayList<Person>` consisting of four `Person` objects: Anakin, age 46, salary 75000; Padme, age 41, salary 1000000; Luke, age 19, salary 0; and Leia, age 19, salary $10000.
+* Create a class (`static`) method `Person.createFamily()` that returns an `ArrayList<Person>` consisting of four `Person` objects: Anakin, age 41, salary 75000; Padme, age 46, salary 1000000; Luke, age 19, salary 0; and Leia, age 19, salary $10000.
 
 * Lastly, you will need to implement a final test, marked in comments in the `TestPerson` class, which will register a `PropertyChangeListener` instance. This `PropertyChangeListener` will need to call the three `assertEquals()` calls (as described in the comments) in order to test that the property did change. You shouldn't change anything above or below the comment lines beyond that. Note that this will likely require you to look over the [documentation](https://docs.oracle.com/javase/8/docs/api/java/beans/PropertyChangeListener.html) for the Listener class--reading JavaDoc is something you need to be able to do!
 
