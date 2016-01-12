@@ -71,6 +71,7 @@ public class TestPerson {
   public void useNaturalComparison() {
     List<Person> people = Person.createFamily();
     Collections.sort(people);
+    System.out.println(people);
     
     assertEquals(new Person("Padme", 46, 1000000), people.get(0));
     assertEquals(new Person("Anakin", 41, 75000), people.get(1));
@@ -98,11 +99,13 @@ public class TestPerson {
     // Call addPropertyChangeListener with an *anonymous* PropertyChangedListener object
     // that runs the following code on a PropertyChangeEvent:
     // that has the following code in it:
-    /*
-    assertEquals("ssn", evt.getPropertyName());
-    assertEquals("", evt.getOldValue());
-    assertEquals("012-34-5678", evt.getNewValue());
-    */
+    alice.addPropertyChangeListener(new PropertyChangeListener(){
+      public void propertyChange(PropertyChangeEvent evt){
+        assertEquals("ssn", evt.getPropertyName());
+        assertEquals("", evt.getOldValue());
+        assertEquals("012-34-5678", evt.getNewValue());
+      }
+    });
 
     // ============ YOUR CHANGES END HERE
     
