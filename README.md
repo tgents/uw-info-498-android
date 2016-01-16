@@ -69,7 +69,7 @@ One of the request parameters you'll need to send is an `appid`&mdash;a register
 
 ```gradle
 buildTypes.each {
-  it.buildConfigField 'String', 'OPEN_WEATHER_MAP_API_KEY', MyOpenWeatherMapApiKey
+  it.buildConfigField 'String', 'OPEN_WEATHER_MAP_API_KEY', '"MyOpenWeatherMapApiKey"'
 }
 ```
 You can then access this build variable in your code via:
@@ -102,7 +102,7 @@ You can then fill in the abstract method `doInBackground()` with what code you w
 ##### Permissions
 Additionally, in order to access external data, you'll need to **request permission** from the user to use the internet. This is a security feature built into Android. Effectively, you specify that your app requires some extra functionality, and then the user has to explicit agree to allow that functionality in order to install your app.
 
-These permission requests are specified in the **Android Manifest** file `manifest.xml`, found in `app/manifests/`. Add the following element to this file (e.g., about the `<application>` element):
+These permission requests are specified in the **Android Manifest** file `manifest.xml`, found in `app/manifests/`. Add the following element to this file (e.g., above the `<application>` element):
 
 ```xml
 <uses-permission android:name="android.permission.INTERNET"/>
