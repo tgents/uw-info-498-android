@@ -112,6 +112,11 @@ public class MainActivity extends AppCompatActivity {
                 JSONObject obj = new JSONObject(buffer.toString());
                 location = obj.getJSONObject("city").getString("name");
                 JSONArray list = obj.getJSONArray("list");
+
+                SimpleDateFormat dayCheckFormat = new SimpleDateFormat("HH", Locale.US);
+                String dayStart = "7";
+                String dayEnd = "17";
+
                 for(int i = 0; i < list.length(); i++){
                     JSONObject report = list.getJSONObject(i);
 
@@ -119,19 +124,19 @@ public class MainActivity extends AppCompatActivity {
                     Double temp = report.getJSONObject("main").getDouble("temp");
 
                     //get time
-                    SimpleDateFormat sdf = new SimpleDateFormat("ccc HH:mma", Locale.US);
+                    SimpleDateFormat sdf = new SimpleDateFormat("ccc hh:mma", Locale.US);
                     Date time = new Date(report.getLong("dt")*1000);
                     String formatTime = sdf.format(time);
 
                     //get weather
                     String weat = report.getJSONArray("weather").getJSONObject(0).getString("main");
-                    if(weat.equals("Clear")){
-                        weat = "SUN!";
-                    }else{
-                        weat = "No Sun on";
+                    int currentTime = Integer.parseInt(dayCheckFormat.format(time));
+                    String sun = "No Sun on";
+                    if(weat.equals("Clear") && currentTime >= 7 && currentTime <= 17 ){
+                        sun = "SUN!";
                     }
 
-                    String addThis = weat + " " + formatTime + " - " + temp + "°F";
+                    String addThis = sun + " " + formatTime + " - " + temp + "°F " + weat;
                     //Log.v(TAG, addThis);
                     forecast.add(addThis);
                 }
