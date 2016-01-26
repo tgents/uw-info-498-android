@@ -74,7 +74,21 @@ Finally, you can get a list of SMS messages that are on the phone by querying th
 
 - A `ContentProvider` is basically a "data source" that has a Uri (Universal Resource Indicator: think URL but not necessarily on the Internet) that you can query, similar in concept to how you get data from a website by sending a query. In particular, these Uri's specify the `content://` protocol, allowing you to access the data as content (rather than, say, HTTP). The Uri for the Inbox is specified as a constant in the [Inbox](http://developer.android.com/reference/android/provider/Telephony.Sms.Inbox.html) class.
 
-- You can access the data in a particular `ContentProvider` by first fetching the <a href="http://developer.android.com/reference/android/content/Context.html#getContentResolver()">`ContentResolver`</a> for the current `Context`, and then using that resolver's <a href="http://developer.android.com/reference/android/content/ContentResolver.html#query(android.net.Uri, java.lang.String[], java.lang.String, java.lang.String[], java.lang.String)">`query`</a> method to query data from the `ContentProvider`. This method returns a `Cursor`---basically working exactly like how we queried an `SQLiteDatabase`!
+- It's _possible_ to access the data in a particular `ContentProvider` by first fetching the <a href="http://developer.android.com/reference/android/content/Context.html#getContentResolver()">`ContentResolver`</a> for the current `Context`, and then using that resolver's <a href="http://developer.android.com/reference/android/content/ContentResolver.html#query(android.net.Uri, java.lang.String[], java.lang.String, java.lang.String[], java.lang.String)">`query`</a> method to query data from the `ContentProvider`. This method returns a `Cursor`---basically working exactly like how we queried an `SQLiteDatabase`!
+
+- **However**, in order to query this content provider in the background thread, it's better to use a [`Loader`](http://developer.android.com/guide/components/loaders.html). This is basically a wrapper around `ASyncTask`, but one that let's you quickly specify what action should occur in the background thread. In particular, Android provides a [`CursorLoader`](http://developer.android.com/reference/android/content/CursorLoader.html) specifically used to load Cursors (like what you'd get from a database, or from the SMS Inbox).
+
+  - To use a `Loader`, you need to specify that your _Fragment_ implements the [`LoaderManager.LoaderCallback`](http://developer.android.com/reference/android/support/v4/app/LoaderManager.LoaderCallbacks.html) interface---basically saying that this fragment can react to Loader events.
+
+    - (Loaders need to work with Fragments. If you have your Activity extends [`FragmentActivity`](http://developer.android.com/reference/android/support/v4/app/FragmentActivity.html), you can get the "Fragment" capabilities to use a Loader in an Activity). Note that `AppCompatActivity` is a subclass of this, so everything can work :)
+
+  - You can then specify what happens the Loader should _do_ in the `onCreateLoader()` callback. Here you would instantiate and return a `CursorLoader` that queries the `ContentProvider` (e.g., the SMS Inbox). Note that the third parameter is a "projection", which is just a list of columns you want to get from the data store (you can use constants from the [`Telephony.Sms.Conversations`](http://developer.android.com/reference/android/provider/Telephony.TextBasedSmsColumns.html) class; most of the ones of note are inherited from [`TextBasedSMSColumns`](http://developer.android.com/reference/android/provider/Telephony.TextBasedSmsColumns.html)).
+
+    - Be sure to include the `_ID` as well!
+
+  - Finally, in the `onLoadFinished()` callback, you can `swap()` the `Cursor` into your `SimpleCursorAdapter` in order to feed that model data into your controller (for display in the view). See the [guide](http://developer.android.com/guide/components/loaders.html) for more details.
+
+  - In order to actually _start_ your background activity, use the [`getLoaderManager().initLoader(...)`] method. Note that you may need to use the `supportLoaderManager` instead.
 
 
 #### Testing SMS
