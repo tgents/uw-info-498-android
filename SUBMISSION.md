@@ -3,24 +3,24 @@
 The below questions should be answered regarding your submission!
 
 ##### What kind of data does your app support tracking? Why did you pick that information to track? #####
-> Answer goes here!
+> Nothing in particular, up to the user.
 
 
 ##### What model device did you test your application on? What SDK did you target? #####
-> Answer goes here!
+> Nexus 6p
 
 
 ##### Approximately how many hours did it take you to complete this assignment? #####
-> Answer goes here!
+> 8-10 hours
 
 
 ##### Did you receive help from any other sources (classmates, etc)? If so, please list who (be specific!). #####
-> Answer goes here!
+> Google, api
 
 
 ##### Did you complete any extensions to this assignment? #####
-> Answer goes here!
+> portrait kind of works
 
 
 ##### Did you encounter any problems in this assignment we should warn students about in the future? How can we make the assignment better? #####
-> Answer goes here!
+> start earlier
