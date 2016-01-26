@@ -20,37 +20,9 @@ import java.util.ArrayList;
  */
 public class SummaryFragment extends Fragment {
     private static final String TAG = "SummaryFragment";
-    private int numAct = 0;
 
     public SummaryFragment() {
         // Required empty public constructor
-    }
-
-    public void setNumAct(int temp) {
-        numAct = temp;
-    }
-
-    public int getNumAct() {
-        Firebase fireDB = new Firebase("https://infoselftracker.firebaseio.com/activities");
-        fireDB.addValueEventListener(new ValueEventListener() {
-            ArrayList<Activity> tempList;
-
-            @Override
-            public void onDataChange(DataSnapshot snapshot) {
-                int temp = 0;
-                for (DataSnapshot thing : snapshot.getChildren()) {
-                    temp++;
-                }
-                setNumAct(temp);
-            }
-
-            @Override
-            public void onCancelled(FirebaseError firebaseError) {
-                Log.v("MainActivity", "The read failed: " + firebaseError.getMessage());
-            }
-        });
-        Log.v("temp", numAct+"");
-        return numAct;
     }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -60,9 +32,13 @@ public class SummaryFragment extends Fragment {
         TextView titleView = (TextView) rootView.findViewById(R.id.title);
         titleView.setText("Summary");
 
-        TextView descView = (TextView) rootView.findViewById(R.id.description);
-        descView.setText("You currently have " + getNumAct() + " activities!");
-
+        Bundle bundle = getArguments();
+        int count;
+        if(bundle != null){
+            count = bundle.getInt("numAct");
+            TextView descView = (TextView) rootView.findViewById(R.id.description);
+            descView.setText("You currently have " + count + " activities!");
+        }
 
         return rootView;
     }

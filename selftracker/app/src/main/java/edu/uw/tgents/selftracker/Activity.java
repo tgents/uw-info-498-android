@@ -5,7 +5,8 @@ import java.text.SimpleDateFormat;
 /**
  * Created by tgents on 1/25/2016.
  */
-public class Activity implements Comparable<Activity>{
+public class Activity implements Comparable<Activity> {
+    private String timeString;
     private long time;
     private int quantity;
     private String comment;
@@ -14,6 +15,12 @@ public class Activity implements Comparable<Activity>{
         this.time = time;
         this.quantity = quantity;
         this.comment = comment;
+        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy hh:mm aa");
+        timeString = sdf.format(time);
+    }
+
+    public String getTimeString() {
+        return timeString;
     }
 
     public long getTime() {
@@ -30,10 +37,7 @@ public class Activity implements Comparable<Activity>{
 
     @Override
     public String toString() {
-        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy hh:mm aa");
-        String tempTime = sdf.format(time);
-
-        return tempTime + " " + quantity + " " + comment;
+        return timeString + " " + quantity + " " + comment;
     }
 
     @Override

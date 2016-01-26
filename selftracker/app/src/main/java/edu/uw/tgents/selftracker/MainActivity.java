@@ -2,7 +2,9 @@ package edu.uw.tgents.selftracker;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.support.v4.app.FragmentManager;
 import android.content.DialogInterface;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -41,6 +43,7 @@ public class MainActivity extends AppCompatActivity implements ActivityFragment.
         setContentView(R.layout.activity_main);
 
         fireDB = new Firebase("https://infoselftracker.firebaseio.com/activities");
+        getNumAct();
         home = new ActivityFragment();
 
         LinearLayout rightPanel = (LinearLayout) findViewById(R.id.container_right);
@@ -50,11 +53,9 @@ public class MainActivity extends AppCompatActivity implements ActivityFragment.
             currentOrientation = 1;
         }
         showActivityFragment();
-
     }
 
     public void setNumAct(int temp) {
-
         numAct = temp;
         Log.v("main", numAct+"");
     }
@@ -119,19 +120,20 @@ public class MainActivity extends AppCompatActivity implements ActivityFragment.
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.container_right, home)
                     .commit();
-            showSummaryFragment();
         } else if (currentOrientation == 1) {
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.container, home)
                     .commit();
         }
+        showSummaryFragment();
         getSupportActionBar().setDisplayHomeAsUpEnabled(false);
     }
 
     private void showSummaryFragment() {
         SummaryFragment sum = new SummaryFragment();
         Bundle bundle = new Bundle();
-        bundle.putInt("count", getNumAct());
+        bundle.putInt("numAct", numAct);
+        Log.v("putin", bundle.get("numAct")+"");
         sum.setArguments(bundle);
         if (currentOrientation == 2) {
             getSupportFragmentManager().beginTransaction()
@@ -160,7 +162,9 @@ public class MainActivity extends AppCompatActivity implements ActivityFragment.
         DetailFragment detail = new DetailFragment();
 
         Bundle bundle = new Bundle();
-        bundle.putString("time", "asd");
+        bundle.putString("time", activity.getTimeString());
+        bundle.putInt("quantity", activity.getQuantity());
+        bundle.putString("comment", activity.getComment());
 
 
         detail.setArguments(bundle);
@@ -173,10 +177,11 @@ public class MainActivity extends AppCompatActivity implements ActivityFragment.
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         } else if (currentOrientation == 2) {
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.container_left, home)
+                    .replace(R.id.container_left, new ActivityFragment())
                     .replace(R.id.container_right, detail)
                     .addToBackStack(null)
                     .commit();
+
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
     }

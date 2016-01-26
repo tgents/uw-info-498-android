@@ -68,6 +68,17 @@ public class ActivityFragment extends Fragment {
         AdapterView listView = (AdapterView)rootView.findViewById(R.id.listView);
         listView.setAdapter(adapter);
 
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Activity activity = (Activity) parent.getItemAtPosition(position);
+                Log.i(TAG, "selected: " + activity.toString());
+
+                //swap the fragments to show the detail
+                ((OnActivitySelectionListener) getActivity()).onActivitySelected(activity);
+            }
+        });
+
         final Firebase fireDB = new Firebase("https://infoselftracker.firebaseio.com/activities");
         fireDB.addValueEventListener(new ValueEventListener() {
             ArrayList<Activity> tempList;

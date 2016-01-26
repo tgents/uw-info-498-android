@@ -28,10 +28,8 @@ public class DetailFragment extends Fragment {
             TextView titleView = (TextView) rootView.findViewById(R.id.title);
             TextView descView = (TextView) rootView.findViewById(R.id.description);
 
-            Activity thing = (Activity) bundle.get("Activity");
-
-            titleView.setText(thing.getQuantity());
-            descView.setText(thing.getComment());
+            titleView.setText(bundle.getString("comment"));
+            descView.setText(bundle.getInt("quantity") + " on " + bundle.getString("time"));
         }
 
         return rootView;
