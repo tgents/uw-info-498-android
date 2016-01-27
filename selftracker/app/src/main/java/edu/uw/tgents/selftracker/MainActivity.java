@@ -30,10 +30,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MainActivity extends AppCompatActivity implements ActivityFragment.OnActivitySelectionListener {
+public class MainActivity extends AppCompatActivity implements ActivityFragment.OnActivitySelectionListener, RecordFragment.OnPostListener {
     private int currentOrientation;
     private ActivityFragment home;
-    private int numAct = 0;
     Firebase fireDB;
 
     @Override
@@ -43,7 +42,6 @@ public class MainActivity extends AppCompatActivity implements ActivityFragment.
         setContentView(R.layout.activity_main);
 
         fireDB = new Firebase("https://infoselftracker.firebaseio.com/activities");
-        getNumAct();
         home = new ActivityFragment();
 
         LinearLayout rightPanel = (LinearLayout) findViewById(R.id.container_right);
@@ -53,32 +51,6 @@ public class MainActivity extends AppCompatActivity implements ActivityFragment.
             currentOrientation = 1;
         }
         showActivityFragment();
-    }
-
-    public void setNumAct(int temp) {
-        numAct = temp;
-        Log.v("main", numAct+"");
-    }
-
-    public int getNumAct() {
-        fireDB.addValueEventListener(new ValueEventListener() {
-            ArrayList<Activity> tempList;
-
-            @Override
-            public void onDataChange(DataSnapshot snapshot) {
-                int temp = 0;
-                for (DataSnapshot thing : snapshot.getChildren()) {
-                    temp++;
-                }
-                setNumAct(temp);
-            }
-
-            @Override
-            public void onCancelled(FirebaseError firebaseError) {
-                Log.v("MainActivity", "The read failed: " + firebaseError.getMessage());
-            }
-        });
-        return numAct;
     }
 
     @Override
@@ -98,9 +70,11 @@ public class MainActivity extends AppCompatActivity implements ActivityFragment.
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
         switch (item.getItemId()) {
-            case R.id.home:
+            case android.R.id.home:
                 getSupportFragmentManager().popBackStack();
-                getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+                if (getSupportFragmentManager().getBackStackEntryCount() <= 1) {
+                    getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+                }
                 return true;
             case R.id.addBtn:
                 showRecordDialog();
@@ -135,10 +109,6 @@ public class MainActivity extends AppCompatActivity implements ActivityFragment.
 
     private void showSummaryFragment() {
         SummaryFragment sum = new SummaryFragment();
-        Bundle bundle = new Bundle();
-        bundle.putInt("numAct", numAct);
-        Log.v("putin", bundle.get("numAct")+"");
-        sum.setArguments(bundle);
         if (currentOrientation == 2) {
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.container_left, sum)
@@ -153,10 +123,10 @@ public class MainActivity extends AppCompatActivity implements ActivityFragment.
     }
 
     public void onBackPressed() {
-        if (getSupportFragmentManager().getBackStackEntryCount() != 0) {
-            getSupportFragmentManager().popBackStack();
+        getSupportFragmentManager().popBackStack();
+        if (getSupportFragmentManager().getBackStackEntryCount() <= 1 ) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(false);
-        } else {
+        }else{
             super.onBackPressed();
         }
     }
@@ -191,4 +161,8 @@ public class MainActivity extends AppCompatActivity implements ActivityFragment.
     }
 
 
+    @Override
+    public void onPost(Activity activity) {
+        onActivitySelected(activity);
+    }
 }

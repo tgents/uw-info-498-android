@@ -24,8 +24,24 @@ import java.util.TimeZone;
  */
 public class RecordFragment extends DialogFragment {
     private static final String TAG = "RecordFragment";
-    private int currentOrientation;
 
+    private OnPostListener callback;
+
+    public interface OnPostListener {
+        public void onPost(Activity activity);
+    }
+
+    @Override
+    public void onAttach(Context context){
+        super.onAttach(context);
+
+        try {
+            callback = (OnPostListener) context;
+        }catch(ClassCastException e){
+            throw new ClassCastException(context.toString() + " must implement OnPostListener");
+        }
+
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -38,7 +54,13 @@ public class RecordFragment extends DialogFragment {
             public void onClick(View v) {
                 EditText q = (EditText) rootView.findViewById(R.id.quantity);
                 EditText com = (EditText) rootView.findViewById(R.id.comment);
-                post(Integer.parseInt(q.getText().toString()),com.getText().toString());
+                if(q.getText().toString().equals("") || com.getText().toString().equals("")){
+                    Toast.makeText(getActivity(), "Please do not leave blank.", Toast.LENGTH_LONG).show();
+                }else{
+                    Activity activity = post(Integer.parseInt(q.getText().toString()),com.getText().toString());
+                    Toast.makeText(getActivity(), "Successfully added!", Toast.LENGTH_LONG).show();
+                    ((OnPostListener) getActivity()).onPost(activity);
+                }
                 getDialog().cancel();
             }
         });
@@ -50,7 +72,7 @@ public class RecordFragment extends DialogFragment {
         Activity activity = new Activity(Calendar.getInstance(TimeZone.getTimeZone("UTC")).getTimeInMillis(), quantity, comment);
         Firebase fireDB = new Firebase("https://infoselftracker.firebaseio.com/activities");
         fireDB.push().setValue(activity);
-        Toast.makeText(getActivity(), "Successfully added!", Toast.LENGTH_SHORT).show();
+
         return activity;
     }
 
