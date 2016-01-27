@@ -98,6 +98,10 @@ public class MainActivity extends AppCompatActivity implements ActivityFragment.
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
         switch (item.getItemId()) {
+            case R.id.home:
+                getSupportFragmentManager().popBackStack();
+                getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+                return true;
             case R.id.addBtn:
                 showRecordDialog();
                 return true;
@@ -120,12 +124,12 @@ public class MainActivity extends AppCompatActivity implements ActivityFragment.
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.container_right, home)
                     .commit();
+            showSummaryFragment();
         } else if (currentOrientation == 1) {
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.container, home)
                     .commit();
         }
-        showSummaryFragment();
         getSupportActionBar().setDisplayHomeAsUpEnabled(false);
     }
 
@@ -185,4 +189,6 @@ public class MainActivity extends AppCompatActivity implements ActivityFragment.
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
     }
+
+
 }
