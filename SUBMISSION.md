@@ -19,7 +19,7 @@ The below questions should be answered regarding your submission!
 
 
 ##### Did you complete any extensions to this assignment? #####
-> portrait kind of works
+> portrait works
 
 
 ##### Did you encounter any problems in this assignment we should warn students about in the future? How can we make the assignment better? #####
