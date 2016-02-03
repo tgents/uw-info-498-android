@@ -6,20 +6,28 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Telephony;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.TextView;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
-    Map<String, ArrayList<Text>> texts;
+    private Map<String, ArrayList<Text>> texts;
+    private int currentView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,27 +45,62 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        if (texts == null) {
+            texts = new HashMap<String, ArrayList<Text>>();
+            populateTexts();
+        }
+
+        currentView = 0;
+        final AdapterView listView = (AdapterView) findViewById(R.id.texts);
+        listView.setAdapter(getContactAdapter());
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                if (currentView == 0) {
+                    String phone = (String) parent.getItemAtPosition(position);
+                    if (texts.containsKey(phone)) {
+                        listView.setAdapter(getTextAdapter(phone));
+                        currentView = 1;
+                        ((TextView) findViewById(R.id.title)).setText(phone);
+                        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+                    }
+                }
+            }
+        });
 
     }
 
-    private void populateTexts(){
+    private ArrayAdapter<String> getContactAdapter() {
+        ArrayList<String> list = new ArrayList<String>();
+        list.addAll(texts.keySet());
+        return new ArrayAdapter<String>(this, R.layout.list_item, R.id.txtItem, list);
+    }
+
+    private ArrayAdapter<Text> getTextAdapter(String num) {
+        ArrayList<Text> list = new ArrayList<Text>();
+        list.addAll(texts.get(num));
+        Collections.sort(list);
+        return new ArrayAdapter<Text>(this, R.layout.list_item, R.id.txtItem, list);
+    }
+
+    private void populateTexts() {
         Uri uri = Telephony.Sms.Inbox.CONTENT_URI;
         Cursor c = getContentResolver().query(uri, null, null, null, null);
         c.moveToFirst();
-        while(!c.isAfterLast()){
+        while (!c.isAfterLast()) {
             String address = c.getString(c.getColumnIndexOrThrow("address"));
             String body = c.getString(c.getColumnIndexOrThrow("body"));
-            long date = c.getInt(c.getColumnIndexOrThrow("date"));
-            Text t = new Text(date, body);
-            if(!texts.containsKey(address)){
+            long date = c.getLong(c.getColumnIndexOrThrow("date"));
+            if (!texts.containsKey(address)) {
                 texts.put(address, new ArrayList<Text>());
             }
-            texts.get(address).add(t);
+            texts.get(address).add(new Text(date, body));
+            c.moveToNext();
         }
     }
 
     @Override
-     public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
@@ -65,25 +108,53 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                onBackPressed();
+                return true;
+            case R.id.action_settings:
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
-
-        return super.onOptionsItemSelected(item);
     }
 
-    class Text{
-        long date;
+    @Override
+    public void onBackPressed() {
+        if (currentView == 1) {
+            currentView = 0;
+            AdapterView listView = (AdapterView) findViewById(R.id.texts);
+            listView.setAdapter(getContactAdapter());
+            ((TextView) findViewById(R.id.title)).setText("Your Messages:");
+            getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    class Text implements Comparable<Text>{
+        long time;
+        String date;
         String body;
-        public Text(long d, String s){
-            date = d;
+
+        public Text(long d, String s) {
+//            Date temp = new Date(d/1000);
+//            date = new SimpleDateFormat("MM/dd/yyyy hh:mm aa").format(temp);
+            SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy hh:mm aa");
+            date = sdf.format(d);
+            time = d;
             body = s;
+        }
+
+        @Override
+        public String toString() {
+            return date + "\n" + body;
+        }
+
+        @Override
+        public int compareTo(Text another) {
+            return (int)(another.time/10000 - this.time/10000);
         }
     }
 }
