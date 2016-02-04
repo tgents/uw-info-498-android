@@ -1,12 +1,16 @@
 package edu.uw.tgents.yama;
 
+import android.app.Activity;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.telephony.SmsManager;
 import android.util.Log;
 import android.view.MenuItem;
@@ -28,6 +32,16 @@ public class SendActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         contact = (EditText) findViewById(R.id.phoneNum);
+        Button cancel = (Button) findViewById(R.id.cancel);
+        Button send = (Button) findViewById(R.id.sendText);
+        final EditText content = (EditText) findViewById(R.id.content);
+
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            contact.setText(extras.getString("phoneNum"));
+            content.requestFocus();
+            keyboardAction(1);
+        }
 
         Button contactBtn = (Button) findViewById(R.id.contactBtn);
         contactBtn.setOnClickListener(new View.OnClickListener() {
@@ -39,24 +53,34 @@ public class SendActivity extends AppCompatActivity {
             }
         });
 
-        Button send = (Button) findViewById(R.id.sendText);
-        final EditText content = (EditText) findViewById(R.id.content);
-        send.setOnClickListener(new View.OnClickListener(){
+        send.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                closeKeyboard();
+                keyboardAction(0);
                 sendMessage(contact.getText().toString(), content.getText().toString());
                 content.setText("");
             }
         });
 
+        cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onBackPressed();
+            }
+        });
+
     }
 
-    private void closeKeyboard(){
+    private void keyboardAction(int action) {
         View view = this.getCurrentFocus();
         if (view != null) {
-            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (action == 0) {
+                imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+            }
+            if (action == 1) {
+                imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+            }
         }
     }
 
@@ -71,10 +95,26 @@ public class SendActivity extends AppCompatActivity {
         }
     }
 
-    private void sendMessage(String number, String message){
+    private void sendMessage(String number, String message) {
+        Intent sentIntent = new Intent("sent");
+        PendingIntent sentPI = PendingIntent.getBroadcast(
+                getApplicationContext(), 0, sentIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT);
+
+        registerReceiver(new BroadcastReceiver() {
+
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (getResultCode() == Activity.RESULT_OK) {
+                    Toast.makeText(getApplicationContext(), "Send Successful!", Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(getApplicationContext(), "Send Failed...", Toast.LENGTH_LONG).show();
+                }
+            }
+        }, new IntentFilter("sent"));
+
         SmsManager smsManager = SmsManager.getDefault();
-        smsManager.sendTextMessage(number, null, message, null, null);
-        Toast.makeText(this, "Send Successful!", Toast.LENGTH_LONG).show();
+        smsManager.sendTextMessage(number, null, message, sentPI, null);
     }
 
     @Override
@@ -92,7 +132,7 @@ public class SendActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        Intent intent = new Intent(SendActivity.this, MainActivity.class);
-        startActivity(intent);
+        finish();
+        overridePendingTransition(0, 0);
     }
 }

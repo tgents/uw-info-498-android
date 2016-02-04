@@ -2,10 +2,10 @@ package edu.uw.tgents.yama;
 
 import android.content.Intent;
 import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Telephony;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -18,9 +18,8 @@ import android.widget.TextView;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
-import java.util.Date;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -41,7 +40,11 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(MainActivity.this, SendActivity.class);
+                if(currentView==1){
+                    intent.putExtra("phoneNum", ((TextView) findViewById(R.id.title)).getText());
+                }
                 startActivity(intent);
+                overridePendingTransition(0, 0);
             }
         });
 
@@ -68,6 +71,20 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        final SwipeRefreshLayout refresh = (SwipeRefreshLayout) findViewById(R.id.swiperefresh);
+        refresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                if (currentView == 0) {
+                    if(texts == null){
+                        texts = new HashMap<String, ArrayList<Text>>();
+                    }
+                    populateTexts();
+                }
+                refresh.setRefreshing(false);
+            }
+        });
+
     }
 
     private ArrayAdapter<String> getContactAdapter() {
@@ -84,8 +101,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void populateTexts() {
-        Uri uri = Telephony.Sms.Inbox.CONTENT_URI;
-        Cursor c = getContentResolver().query(uri, null, null, null, null);
+        Cursor c = getContentResolver().query(Telephony.Sms.Inbox.CONTENT_URI, null, null, null, null);
         c.moveToFirst();
         while (!c.isAfterLast()) {
             String address = c.getString(c.getColumnIndexOrThrow("address"));
@@ -97,6 +113,7 @@ public class MainActivity extends AppCompatActivity {
             texts.get(address).add(new Text(date, body));
             c.moveToNext();
         }
+        c.close();
     }
 
     @Override
@@ -114,6 +131,8 @@ public class MainActivity extends AppCompatActivity {
                 onBackPressed();
                 return true;
             case R.id.action_settings:
+                Intent intent = new Intent(MainActivity.this, SettingActivity.class);
+                startActivity(intent);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -133,10 +152,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    class Text implements Comparable<Text>{
-        long time;
-        String date;
-        String body;
+    class Text implements Comparable<Text> {
+        public long time;
+        public String date;
+        public String body;
 
         public Text(long d, String s) {
 //            Date temp = new Date(d/1000);
@@ -154,7 +173,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public int compareTo(Text another) {
-            return (int)(another.time/10000 - this.time/10000);
+            return (int) (another.time / 10000 - this.time / 10000);
         }
     }
 }

@@ -35,11 +35,27 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
-    <Button
-        android:id="@+id/sendText"
+    <LinearLayout
         android:layout_below="@+id/content"
+        android:id="@+id/sendcancel"
+        android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Send Text"/>
+        android:layout_height="wrap_content">
+        <Button
+            android:id="@+id/cancel"
+            android:layout_below="@+id/content"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight=".5"
+            android:text="cancel"/>
+        <Button
+            android:id="@+id/sendText"
+            android:layout_below="@+id/content"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight=".5"
+            android:text="Send Text"/>
+    </LinearLayout>
+
 
 </RelativeLayout>
