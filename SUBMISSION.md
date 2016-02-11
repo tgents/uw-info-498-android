@@ -3,24 +3,24 @@
 The below questions should be answered regarding your submission!
 
 ##### What kind of drawing(s) did you make? #####
-> Answer goes here!
+> A circle kind of thing with another thing coming out of it. A multicolor smiley face. A path from where I drove.
 
 
 ##### What model device did you test your application on? What SDK did you target? #####
-> Answer goes here!
+> Nexus 6p, 23
 
 
 ##### Approximately how many hours did it take you to complete this assignment? #####
-> Answer goes here!
+> 5-6 hours
 
 
 ##### Did you receive help from any other sources (classmates, etc)? If so, please list who (be specific!). #####
-> Answer goes here!
+> Mostly Google
 
 
 ##### Did you complete any other extensions or additions to this assignment?. #####
-> Answer goes here!
+> No
 
 
 ##### Did you encounter any problems in this assignment we should warn students about in the future? How can we make the assignment better? #####
-> Answer goes here!
+> Not really

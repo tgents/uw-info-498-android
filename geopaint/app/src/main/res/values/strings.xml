@@ -1,5 +1,5 @@
 <resources>
     <string name="app_name">geopaint</string>
-    <string name="action_settings">action</string>
+    <string name="action_settings">Choose a Color</string>
     <string name="title_activity_maps">Map</string>
 </resources>

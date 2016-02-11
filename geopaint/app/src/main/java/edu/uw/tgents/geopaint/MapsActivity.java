@@ -1,16 +1,22 @@
 package edu.uw.tgents.geopaint;
 
 import android.Manifest;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.view.MenuItemCompat;
+import android.support.v7.widget.PopupMenu;
+import android.support.v7.widget.ShareActionProvider;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
@@ -28,29 +34,41 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 import petrov.kristiyan.colorpicker.ColorPicker;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener, ActivityCompat.OnRequestPermissionsResultCallback {
+public class MapsActivity extends FragmentActivity implements PopupMenu.OnMenuItemClickListener, OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener, ActivityCompat.OnRequestPermissionsResultCallback {
 
     GoogleApiClient mGoogleApiClient;
     Location currentLocation;
     boolean penDown = false;
     PolylineOptions currentLine;
-    private GoogleMap mMap;
     List<Polyline> lines = new ArrayList<Polyline>();
+    int penColor;
+    private GoogleMap mMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
         mapFragment.setRetainInstance(true);
+
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        int tempColor = sharedPref.getInt("drawColor", 0);
+        if (tempColor == 0) {
+            penColor = Color.BLACK;
+        } else {
+            penColor = tempColor;
+        }
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -59,15 +77,26 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 penDown = !penDown;
                 Toast.makeText(getApplicationContext(), "Currently drawing: " + penDown, Toast.LENGTH_SHORT).show();
                 if (penDown == true) {
-                    mGoogleApiClient.connect();
-                    currentLine = new PolylineOptions();
+                    startDraw();
                 } else {
-                    mGoogleApiClient.disconnect();
-                    currentLine = null;
+                    stopDraw();
                 }
             }
         });
 
+    }
+
+    private void startDraw() {
+        mGoogleApiClient.connect();
+        currentLine = new PolylineOptions();
+        currentLine.color(penColor);
+        mMap.addPolyline(currentLine);
+    }
+
+    private void stopDraw() {
+        lines.add(mMap.addPolyline(currentLine));
+        mGoogleApiClient.disconnect();
+        currentLine = null;
     }
 
 
@@ -148,8 +177,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onLocationChanged(Location location) {
         currentLocation = location;
-        currentLine.add(new LatLng(location.getLatitude(), location.getLongitude()));
-        lines.add(mMap.addPolyline(currentLine));
+        LatLng latLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
+        currentLine.add(latLng);
+        mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
+        mMap.addPolyline(currentLine);
     }
 
     @Override
@@ -158,36 +189,77 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_settings:
-                ColorPicker colorPicker = new ColorPicker(this);
-                colorPicker.show();
-                colorPicker.setOnChooseColorListener(new ColorPicker.OnChooseColorListener() {
-                    @Override
-                    public void onChooseColor(int position,int color) {
-                        //put code
-                    }
-                });
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
-
-    @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         if (requestCode == 1) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 setUpLocation();
             }
+        }
+    }
+
+    public void showPopup(View v) {
+        PopupMenu popup = new PopupMenu(this, v);
+        popup.setOnMenuItemClickListener(this);
+        popup.inflate(R.menu.menu_main);
+        popup.show();
+    }
+
+    @Override
+    public boolean onMenuItemClick(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.color:
+                ColorPicker colorPicker = new ColorPicker(this);
+                colorPicker.show();
+                colorPicker.setOnChooseColorListener(new ColorPicker.OnChooseColorListener() {
+                    @Override
+                    public void onChooseColor(int position, int color) {
+                        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                        SharedPreferences.Editor edit = sharedPref.edit();
+                        edit.putInt("drawColor", color);
+                        penColor = color;
+                        if (penDown) {
+                            stopDraw();
+                            startDraw();
+                        }
+                        Toast.makeText(getApplicationContext(), "Color has been saved", Toast.LENGTH_SHORT).show();
+                    }
+                });
+                return true;
+            case R.id.save:
+                Toast.makeText(this, saveDrawings(), Toast.LENGTH_SHORT).show();
+                return true;
+            case R.id.share:
+                if (lines.size() > 0) {
+                    ShareActionProvider myShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(item);
+                    Intent myShareIntent = new Intent(Intent.ACTION_SEND);
+                    myShareIntent.setType("text/plain");
+                    saveDrawings();
+                    myShareIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(new File(this.getExternalFilesDir(null), "drawing.geojson")));
+                    myShareActionProvider.setShareIntent(myShareIntent);
+                } else {
+                    Toast.makeText(this, "No drawings to share...", Toast.LENGTH_SHORT).show();
+                }
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private String saveDrawings() {
+        try {
+            File file = new File(this.getExternalFilesDir(null), "drawing.geojson");
+            Log.v("TEST", ""+ file.exists());
+            if (lines.size() > 0) {
+                FileOutputStream outputStream = new FileOutputStream(file);
+                outputStream.write(GeoJsonConverter.convertToGeoJson(lines).getBytes()); //write the string to the file
+                outputStream.close(); //close the stream
+                return "Save successful!";
+            } else {
+                return "Could not save";
+            }
+
+        } catch (Exception e) {
+            return "Could not save";
         }
     }
 }
