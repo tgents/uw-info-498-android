@@ -27,9 +27,13 @@ public class DrawingSurfaceView extends SurfaceView implements SurfaceHolder.Cal
     private SurfaceHolder mHolder; //the holder we're going to post updates to
     private DrawingRunnable mRunnable; //the code htat we'll want to run on a background thread
     private Thread mThread; //the background thread
-    private Paint redPaint; //drawing variables (pre-defined for speed)
+    private Paint playerColor; //drawing variables (pre-defined for speed)
+    private Paint obstacleColor;
+
     private boolean pause = false;
     private boolean firstLoad = true;
+
+
     private int col1;
     private int col2;
     private int col3;
@@ -63,8 +67,10 @@ public class DrawingSurfaceView extends SurfaceView implements SurfaceHolder.Cal
         mRunnable = new DrawingRunnable();
 
         //set up drawing variables ahead of timme
-        redPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        redPaint.setColor(Color.RED);
+        playerColor = new Paint(Paint.ANTI_ALIAS_FLAG);
+        playerColor.setColor(Color.BLUE);
+        obstacleColor = new Paint(Paint.ANTI_ALIAS_FLAG);
+        obstacleColor.setColor(Color.RED);
 
         player = new DrawObject();
         obstacles = new ArrayList<DrawObject>();
@@ -106,14 +112,16 @@ public class DrawingSurfaceView extends SurfaceView implements SurfaceHolder.Cal
         //TODO: replace the below example with your own rendering
 
         canvas.drawColor(Color.BLACK); //black out the background
-        canvas.drawCircle(player.x, player.y, player.radius, redPaint); //draw player
+        
         for (int i = 0; i < obstacles.size(); i++) {
             DrawObject obj = obstacles.get(i);
-            canvas.drawCircle(obj.x, obj.y, obj.radius, redPaint);
+            canvas.drawCircle(obj.x, obj.y, obj.radius, obstacleColor);
             if(obj.y > viewHeight+obj.radius){
                 obstacles.remove(i);
             }
         }
+
+        canvas.drawCircle(player.x, player.y, player.radius, playerColor); //draw player
 
         //see http://developer.android.com/reference/android/graphics/Canvas.html for a list of options
 
