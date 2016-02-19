@@ -2,6 +2,7 @@ package edu.uw.tgents.motion;
 
 /**
  * Created by tgents on 2/17/2016.
+ * Class for objects being drawn
  */
 public class DrawObject {
     public int x;
