@@ -4,12 +4,16 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.media.AudioAttributes;
+import android.media.AudioManager;
+import android.media.SoundPool;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * An example SurfaceView for generating graphics on
@@ -20,27 +24,35 @@ import java.util.ArrayList;
 public class DrawingSurfaceView extends SurfaceView implements SurfaceHolder.Callback {
 
     private static final String TAG = "SurfaceView";
+    private static final int FALL_SPEED_SLOW = 5;
+    private static final int FALL_SPEED_NORMAL = 7;
+    private static final int FALL_SPEED_FAST = 10;
+    private static final int DEFAULT_COOLDOWN = 10000;
+    // interactive variables
     public DrawObject player;
-
-    //    private Bitmap bmp; //image to draw on
-    private int viewWidth, viewHeight; //size of the view
-    private SurfaceHolder mHolder; //the holder we're going to post updates to
-    private DrawingRunnable mRunnable; //the code htat we'll want to run on a background thread
-    private Thread mThread; //the background thread
-    private Paint playerColor; //drawing variables (pre-defined for speed)
+    public DrawObject playerTap;
+    public int col1;
+    public int col2;
+    public int col3;
+    public int tapCooldown;
+    //view dimensions
+    private int viewWidth, viewHeight;
+    // background thread stuff
+    private SurfaceHolder mHolder;
+    private DrawingRunnable mRunnable;
+    private Thread mThread;
+    // game attributes
+    private Paint playerColor;
     private Paint obstacleColor;
-
-    private boolean pause = false;
-    private boolean firstLoad = true;
-
-
-    private int col1;
-    private int col2;
-    private int col3;
     private int obstacleRadius;
     private ArrayList<DrawObject> obstacles;
-
-    private int fallSpeed = 5;
+    // game status
+    private boolean pause = false;
+    private boolean firstLoad = true;
+    //sounds
+    private SoundPool mSoundPool;
+    private int[] soundIds;
+    private boolean[] loadedSound;
 
 
     /**
@@ -57,8 +69,10 @@ public class DrawingSurfaceView extends SurfaceView implements SurfaceHolder.Cal
     public DrawingSurfaceView(Context context, AttributeSet attrs, int defaultStyle) {
         super(context, attrs, defaultStyle);
 
+        initializeSoundPool();
+
         viewWidth = 1;
-        viewHeight = 1; //positive defaults; will be replaced when #surfaceChanged() is called
+        viewHeight = 1;
 
         // register our interest in hearing about changes to our surface
         mHolder = getHolder();
@@ -66,14 +80,30 @@ public class DrawingSurfaceView extends SurfaceView implements SurfaceHolder.Cal
 
         mRunnable = new DrawingRunnable();
 
-        //set up drawing variables ahead of timme
+        // set draw object colors
         playerColor = new Paint(Paint.ANTI_ALIAS_FLAG);
         playerColor.setColor(Color.BLUE);
         obstacleColor = new Paint(Paint.ANTI_ALIAS_FLAG);
         obstacleColor.setColor(Color.RED);
+    }
 
+    public void newGame() {
         player = new DrawObject();
+        playerTap = new DrawObject(-100, -100, 10);
         obstacles = new ArrayList<DrawObject>();
+
+        // set up obstacles and columns
+        col1 = viewWidth / 6;
+        col2 = 3 * viewWidth / 6;
+        col3 = 5 * viewWidth / 6;
+        obstacleRadius = viewWidth / 6;
+
+        // set up player
+        player.x = col2;
+        player.radius = obstacleRadius;
+        player.y = viewHeight - player.radius;
+        tapCooldown = 0;
+        setPause(false);
     }
 
 
@@ -88,16 +118,95 @@ public class DrawingSurfaceView extends SurfaceView implements SurfaceHolder.Cal
             setPause(true);
         }
 
-        if (!pause) {
-            if (obstacles.size() == 0 || obstacles.get(obstacles.size()-1).y > viewHeight/2) {
+        if (!pause && isSoundLoaded()) {
+            if (obstacles.size() == 0 || obstacles.get(obstacles.size() - 1).y > viewHeight / 2) {
                 obstacles.add(new DrawObject(chooseCol(), 0, obstacleRadius));
+                if (Math.random() < 0.1) {
+                    obstacles.add(new DrawObject(chooseCol(), 0, obstacleRadius));
+                }
+                playSound(1);
             }
 
-            for (DrawObject obs : obstacles) {
-                obs.y += fallSpeed;
+            for (int i = 0; i < obstacles.size(); i++) {
+                DrawObject obs = obstacles.get(i);
+                obs.y += FALL_SPEED_NORMAL;
+                if (checkCollision(player, obs)) {
+                    playSound(2);
+                    //reset game
+                    newGame();
+                }
+                if (checkCollision(obs, playerTap)) {
+                    //reset to default
+                    tapCooldown = DEFAULT_COOLDOWN;
+                    obstacles.remove(i);
+                    playerTap.x = -100;
+                    playerTap.y = -100;
+                    playSound(0);
+                }
+            }
+
+            tapCooldown--;
+        }
+    }
+
+    private boolean isSoundLoaded(){
+        for(boolean b : loadedSound) {
+            if(!b) {
+                return false;
             }
         }
+        return true;
+    }
 
+    private void initializeSoundPool() {
+
+        final int MAX_STREAMS = 4;
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            AudioAttributes attribs = new AudioAttributes.Builder()
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .setUsage(AudioAttributes.USAGE_GAME)
+                    .build();
+
+            mSoundPool = new SoundPool.Builder()
+                    .setMaxStreams(MAX_STREAMS)
+                    .setAudioAttributes(attribs)
+                    .build();
+        } else {
+            mSoundPool = new SoundPool(MAX_STREAMS, AudioManager.STREAM_MUSIC, 0);
+        }
+
+        soundIds = new int[3];
+        loadedSound = new boolean[3];
+
+        mSoundPool.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
+            @Override
+            public void onLoadComplete(SoundPool soundPool, int sampleId, int status) {
+                if (status == 0) {
+                    if (sampleId == soundIds[0]) {
+                        loadedSound[0] = true;
+                    } else if (sampleId == soundIds[1]) {
+                        loadedSound[1] = true;
+                    } else if (sampleId == soundIds[2]) {
+                        loadedSound[2] = true;
+                    }
+                }
+            }
+        });
+
+        // sound sources:
+        // http://soundbible.com/2067-Blop.html
+        // http://soundbible.com/1320-Short-Circuit.html
+        // http://soundbible.com/1682-Robot-Blip.html
+        soundIds[0] = mSoundPool.load(getContext(), R.raw.start, 0);
+        soundIds[1] = mSoundPool.load(getContext(), R.raw.spawn, 0);
+        soundIds[2] = mSoundPool.load(getContext(), R.raw.end, 0);
+    }
+
+    public void playSound(int index) {
+        if (loadedSound[index]) {
+            mSoundPool.play(soundIds[index], 1, 1, 1, 0, 1);
+        }
     }
 
 
@@ -109,30 +218,18 @@ public class DrawingSurfaceView extends SurfaceView implements SurfaceHolder.Cal
     public void render(Canvas canvas) {
         if (canvas == null) return; //if we didn't get a valid canvas for whatever reason
 
-        //TODO: replace the below example with your own rendering
-
         canvas.drawColor(Color.BLACK); //black out the background
-        
+
         for (int i = 0; i < obstacles.size(); i++) {
             DrawObject obj = obstacles.get(i);
             canvas.drawCircle(obj.x, obj.y, obj.radius, obstacleColor);
-            if(obj.y > viewHeight+obj.radius){
+            if (obj.y > viewHeight + obj.radius / 2) {
                 obstacles.remove(i);
             }
         }
 
         canvas.drawCircle(player.x, player.y, player.radius, playerColor); //draw player
 
-        //see http://developer.android.com/reference/android/graphics/Canvas.html for a list of options
-
-//        for(int x=50; x<viewWidth-50; x++) { //most of the width
-//            for(int y=100; y<110; y++) { //10 pixels high
-//                bmp.setPixel(x, y, Color.BLUE); //we can also set individual pixels in a Bitmap (like a BufferedImage)
-//            }
-//        }
-
-        //Canvas bmc = new Canvas(bmp); //we can also make a canvas out of a Bitmap to draw on that (like fetching g2d from a BufferedImage)
-        //canvas.drawBitmap(bmp,0,0,null); //and then draw the BitMap onto the canvas.
     }
 
 
@@ -153,17 +250,8 @@ public class DrawingSurfaceView extends SurfaceView implements SurfaceHolder.Cal
             viewWidth = width;
             viewHeight = height;
 //            bmp = Bitmap.createBitmap(viewWidth, viewHeight, Bitmap.Config.ARGB_8888); //new buffer to draw on.
+            newGame();
 
-            // set up obstacles
-            col1 = viewWidth / 6;
-            col2 = 3 * viewWidth / 6;
-            col3 = 5 * viewWidth / 6;
-            obstacleRadius = viewWidth / 6;
-
-            // set up player
-            player.x = col2;
-            player.radius = obstacleRadius;
-            player.y = viewHeight - player.radius;
         }
     }
 
@@ -188,15 +276,41 @@ public class DrawingSurfaceView extends SurfaceView implements SurfaceHolder.Cal
         this.pause = pause;
     }
 
-    private int chooseCol(){
-        int newX = col1;
+    private int chooseCol() {
+        int lastX = obstacles.size() > 0 ? obstacles.get(obstacles.size() - 1).x : col2;
+        int newX;
         double temp = Math.random();
-        if (temp < (1 / 3.0)) {
-            newX = col2;
-        } else if (temp > (2 / 3.0)) {
-            newX = col3;
+        if (lastX == col2) {
+            if (temp < .5) {
+                newX = col1;
+            } else {
+                newX = col3;
+            }
+        } else if (lastX == col1) {
+            if (temp < .5) {
+                newX = col2;
+            } else {
+                newX = col3;
+            }
+        } else {
+            if (temp < .5) {
+                newX = col1;
+            } else {
+                newX = col2;
+            }
         }
         return newX;
+    }
+
+    private boolean checkCollision(DrawObject thing1, DrawObject thing2) {
+        int dx = thing1.x - thing2.x;
+        int dy = thing1.y - thing2.y;
+        double distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance < thing1.radius + thing2.radius - thing1.radius / 10) {
+            return true;
+        }
+        return false;
     }
 
     /**
